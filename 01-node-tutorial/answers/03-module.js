@@ -12,3 +12,5 @@ console.log(data.foodItem);
 console.log(data.foodItem.type);
 
 require("./07-mind-grenade");
+
+require("./08-os-module");
