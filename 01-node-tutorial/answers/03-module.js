@@ -12,13 +12,3 @@ console.log(data.foodItem);
 console.log(data.foodItem.type);
 
 require("./07-mind-grenade");
-
-require("./08-os-module");
-
-require("./09-path-module");
-
-require("./10-fs-sync");
-
-require("./11-fs-async");
-
-require("./12-http");
