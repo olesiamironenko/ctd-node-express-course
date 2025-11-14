@@ -16,3 +16,5 @@ require("./07-mind-grenade");
 require("./08-os-module");
 
 require("./09-path-module");
+
+require("./10-fs-sync");
