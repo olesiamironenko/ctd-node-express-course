@@ -20,3 +20,5 @@ require("./09-path-module");
 require("./10-fs-sync");
 
 require("./11-fs-async");
+
+require("./12-http");
