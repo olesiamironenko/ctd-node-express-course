@@ -1,6 +1,15 @@
 const express = require("express");
-const { products } = require("./data");
+const { products, people } = require("./data");
+const peopleRouter = require("./routes/people");
 const app = express();
+
+const logger = (req, res, next) => {
+  const method = req.method;
+  const url = req.url;
+  const time = new Date().getFullYear();
+  console.log(method, url, time);
+  next();
+};
 
 // ---- helper ----
 // -- price validation --
@@ -12,7 +21,18 @@ function validatePrice(value) {
 }
 
 // -- public --
-app.use(express.static("./public"));
+app.use(logger);
+app.use(express.static("./methods-public"));
+
+// -- post implementation
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.use("/api/v1/people", peopleRouter);
+
+app.get("/", (req, res) => {
+  res.send("Home");
+});
 
 // -- test --
 app.get("/api/v1/test", (req, res) => {
@@ -77,7 +97,7 @@ app.get("/api/v1/query", (req, res) => {
     try {
       const pattern = new RegExp(regex, "i");
       filteredProducts = filteredProducts.filter((product) => {
-        pattern.test(product.name);
+        return pattern.test(product.name);
       });
     } catch (err) {
       return res
@@ -110,9 +130,30 @@ app.get("/api/v1/query", (req, res) => {
   res.status(200).json(filteredProducts);
 });
 
+// // -- get people --
+// app.get("/api/v1/people", (req, res) => {
+//   res.json(people);
+// });
+
+// // -- post people --
+// app.post("/api/v1/people", (req, res) => {
+//   const { name } = req.body;
+
+//   // -- validation --
+//   if (!name) {
+//     return res
+//       .status(400)
+//       .json({ success: false, message: "Please provide a name" });
+//   }
+
+//   // add to array
+//   people.push({ id: people.length + 1, name: req.body.name });
+//   res.status(200).json({ success: true, name: req.body.name });
+// });
+
 // app.post()
 app.all("*", (req, res) => {
-  res.status(404).send("<p><h1>404</h1></p><p>page not found</>");
+  res.status(404).send("<h1>404</h1><p>page not found</p>");
 });
 
 app.listen(3000, () => {
