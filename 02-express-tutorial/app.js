@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const { products, people } = require("./data");
 const peopleRouter = require("./routes/people");
 const app = express();
@@ -11,6 +12,18 @@ const logger = (req, res, next) => {
   next();
 };
 
+// -- public --
+app.use(logger);
+app.use(express.static("./methods-public"));
+
+// -- post implementation
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.use(cookieParser());
+
+app.use("/api/v1/people", peopleRouter);
+
 // ---- helper ----
 // -- price validation --
 function validatePrice(value) {
@@ -20,15 +33,42 @@ function validatePrice(value) {
   return num;
 }
 
-// -- public --
-app.use(logger);
-app.use(express.static("./methods-public"));
+// -- middleware --
+// -- authentication --
+function auth(req, res, next) {
+  const { name } = req.cookies;
 
-// -- post implementation
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+  if (!name) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-app.use("/api/v1/people", peopleRouter);
+  console.log("Cookies received:", req.cookies);
+  req.user = name;
+
+  next();
+}
+// -- end of middleware --
+
+// -- logon --
+app.post("/logon", (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ message: "Name is reqired" });
+  }
+  res.cookie("name", name);
+  res.status(201).json({ message: `Hello, ${name}` });
+});
+
+// -- logoff --
+app.delete("/logoff", (req, res) => {
+  res.clearCookie("name");
+  res.status(200).json({ message: "User logged off" });
+});
+
+// -- test authentication --
+app.get("/test", auth, (req, res) => {
+  res.status(200).json({ message: `Welcome ${req.user}` });
+});
 
 app.get("/", (req, res) => {
   res.send("Home");
